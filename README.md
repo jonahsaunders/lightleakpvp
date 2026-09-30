@@ -3,6 +3,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/jonahsaunders/lightleakpvp/releases/latest"><img src="https://img.shields.io/github/v/release/jonahsaunders/lightleakpvp?label=download&color=d8452f&style=flat-square" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/teams-1v1%20%C2%B7%202v2%20%C2%B7%205v5-3a322c?style=flat-square" alt="1v1, 2v2 and 5v5">
   <img src="https://img.shields.io/badge/play-Windows%20%C2%B7%20Mac%20%C2%B7%20browser-3a322c?style=flat-square" alt="Windows, Mac and browser">
   <img src="https://img.shields.io/badge/built%20with-three.js%20%C2%B7%20Rapier%20%C2%B7%20ws-3a322c?style=flat-square" alt="Built with three.js, Rapier and ws">
@@ -15,6 +16,7 @@ A team spin-off of [Lightleak](https://github.com/jonahsaunders/lightleak). Same
 It's a puzzle game you play against people. Every fight is about distance and weight: how far away you were when you took the photo, how far away you are when you develop it, and whose weight is sitting on the plate.
 
 <p align="center">
+  <a href="https://github.com/jonahsaunders/lightleakpvp/releases/latest"><b>Download for Windows</b></a> &nbsp;·&nbsp;
   <a href="#quick-start"><b>Quick start</b></a> &nbsp;·&nbsp;
   <a href="#playing-together"><b>Play with friends</b></a> &nbsp;·&nbsp;
   <a href="#controls"><b>Controls</b></a> &nbsp;·&nbsp;
@@ -23,7 +25,14 @@ It's a puzzle game you play against people. Every fight is about distance and we
 
 ## Quick start
 
-You need [Node.js](https://nodejs.org/) 18 or later.
+**On Windows**, download from [the latest release](https://github.com/jonahsaunders/lightleakpvp/releases/latest):
+
+- `LightleakPvP-Setup-<version>.exe` installs it with a Start menu shortcut.
+- `LightleakPvP-<version>-portable.exe` runs without installing.
+
+The builds aren't code-signed, so Windows SmartScreen may say it "protected your PC". Choose **More info**, then **Run anyway**. The first time you host a game, Windows Firewall asks whether to let it on your network; allow it on private networks.
+
+**From source** (any system with [Node.js](https://nodejs.org/) 18 or later):
 
 ```bash
 git clone https://github.com/jonahsaunders/lightleakpvp.git

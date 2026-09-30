@@ -1,0 +1,91 @@
+{
+  "id": "drying-hall",
+  "name": "Drying Hall",
+  "blurb": "A long hall of drying lines with a balcony down each side. Each team's own plate is up on a balcony; the big one is in the middle.",
+  "sizes": [2, 5],
+  "score": 300,
+  "room": { "x0": -18, "x1": 18, "z0": -30, "z1": 30, "h": 10, "floor": false },
+  "killY": -8,
+  "blocks": [
+    { "min": [-18, -0.5, -30], "max": [18, 0, -12], "mat": "floor" },
+    { "min": [-18, -0.5, -12], "max": [-10, 0, 0], "mat": "floor" },
+    { "min": [-4, -0.5, -12], "max": [18, 0, -6], "mat": "floor" },
+    { "min": [-10, -0.5, -6], "max": [18, 0, 0], "mat": "floor" },
+    { "min": [-10, -0.3, -12], "max": [-4, 0, -6], "mat": "emulsion" },
+
+    { "min": [14, 3, -20], "max": [18, 3.4, 20], "mat": "ledge", "cast": true },
+    { "min": [13.94, 3.4, -20], "max": [14, 4.4, -4], "mat": "glass" },
+    { "min": [13.94, 3.4, 4], "max": [14, 4.4, 20], "mat": "glass" },
+    { "min": [14, 0, -24.5], "max": [18, 0.4, -24], "mat": "ledge" },
+    { "min": [14, 0, -24], "max": [18, 0.8, -23.5], "mat": "ledge" },
+    { "min": [14, 0, -23.5], "max": [18, 1.2, -23], "mat": "ledge" },
+    { "min": [14, 0, -23], "max": [18, 1.6, -22.5], "mat": "ledge" },
+    { "min": [14, 0, -22.5], "max": [18, 2.0, -22], "mat": "ledge" },
+    { "min": [14, 0, -22], "max": [18, 2.4, -21.5], "mat": "ledge" },
+    { "min": [14, 0, -21.5], "max": [18, 2.8, -21], "mat": "ledge" },
+    { "min": [14, 0, -21], "max": [18, 3.2, -20.5], "mat": "ledge" },
+    { "min": [14, 0, -20.5], "max": [18, 3.4, -20], "mat": "ledge" },
+    { "min": [14, 0, -19.6], "max": [14.4, 3, -19.2], "mat": "wall", "cast": true },
+    { "min": [14, 0, -0.2], "max": [14.4, 3, 0.2], "mat": "wall", "cast": true, "mid": true },
+    { "min": [-14.4, 0, -0.2], "max": [-14, 3, 0.2], "mat": "wall", "cast": true, "mid": true },
+
+    { "min": [-18, 0, -25.2], "max": [-9, 3, -24.8], "mat": "wall" },
+    { "min": [-6, 0, -25.2], "max": [-1.4, 3, -24.8], "mat": "wall" },
+    { "min": [1.4, 0, -25.2], "max": [6, 3, -24.8], "mat": "wall" },
+    { "min": [9, 0, -25.2], "max": [14, 3, -24.8], "mat": "wall" },
+
+    { "min": [-4, 0, -4.8], "max": [4, 2.8, -4.5], "mat": "emulsion" },
+    { "min": [-7.5, 0, 3], "max": [-5.5, 1.3, 4.6], "mat": "ledge", "cast": true },
+    { "min": [4, 0, -17], "max": [7, 2.4, -16.7], "mat": "emulsion" },
+    { "min": [-9, 0, -17.5], "max": [-7, 1.1, -15.5], "mat": "ledge", "cast": true },
+
+    { "min": [-14, 0, -21], "max": [-12, 1, -19], "mat": "ledge" },
+    { "min": [-14, 1, -21], "max": [-12, 2.3, -20.94], "mat": "glass" },
+    { "min": [-14, 1, -19.06], "max": [-12, 2.3, -19], "mat": "glass" },
+    { "min": [-14, 1, -20.94], "max": [-13.94, 2.3, -19.06], "mat": "glass" },
+    { "min": [-12.06, 1, -20.94], "max": [-12, 2.3, -19.06], "mat": "glass" }
+  ],
+  "plates": [
+    { "pos": [0, 0, 0], "size": [3.5, 3.5], "need": 6, "max": 14, "mid": true },
+    { "pos": [16, 3.4, -10], "size": [3, 3], "need": 3, "max": 8 }
+  ],
+  "props": [
+    { "type": "crate", "pos": [-5, 0, -20], "size": [1.2, 1.2, 1.2] },
+    { "type": "crate", "pos": [6, 0, -12], "size": [1.4, 1.4, 1.4], "rot": 30 },
+    { "type": "steel", "pos": [11, 0, -18], "size": [1.2, 1.2, 1.2] },
+    { "type": "steel", "pos": [16, 3.4, -16], "size": [0.9, 0.9, 0.9] },
+    { "type": "plank", "pos": [-13, 0, -9], "size": [3.2, 0.2, 0.6], "rot": 90 },
+    { "type": "crate", "pos": [-15, 0, -3], "size": [1, 1, 1], "rot": 10 },
+    { "type": "steel", "pos": [-13.4, 1, -20.3], "size": [0.35, 0.35, 0.35] },
+    { "type": "crate", "pos": [-12.6, 1, -19.6], "size": [0.3, 0.3, 0.3], "rot": 25 },
+    { "type": "crate", "pos": [2.5, 0, -8], "size": [0.9, 0.9, 0.9] }
+  ],
+  "spawns": [
+    { "pos": [0, 0, -27.5], "yaw": 180 },
+    { "pos": [-7.5, 0, -28], "yaw": 180 },
+    { "pos": [7.5, 0, -28], "yaw": 180 },
+    { "pos": [-3.5, 0, -28.5], "yaw": 180 },
+    { "pos": [3.5, 0, -28.5], "yaw": 180 },
+    { "pos": [-12, 0, -28.5], "yaw": 180 },
+    { "pos": [12, 0, -28.5], "yaw": 180 }
+  ],
+  "lights": [
+    { "pos": [0, 10, 0], "panel": true, "w": 3, "d": 3, "intensity": 1.2, "mid": true },
+    { "pos": [0, 10, -14], "panel": true, "w": 3, "d": 1 },
+    { "pos": [-9, 10, -6], "panel": true, "w": 2, "d": 1 },
+    { "pos": [16, 7, -10], "panel": true, "w": 2, "d": 1.4, "floorY": 3.4 },
+    { "pos": [0, 10, -27.5], "panel": true, "w": 4, "d": 1, "intensity": 0.7 },
+    { "pos": [-13, 2.8, -20], "intensity": 0.5, "dist": 5 }
+  ],
+  "decor": [
+    { "kind": "line", "from": [-13.5, 7, -8], "to": [13.5, 7, -8] },
+    { "kind": "line", "from": [-13.5, 7.3, -16], "to": [13.5, 7.3, -16] },
+    { "kind": "line", "from": [-13.5, 6.8, -23], "to": [13.5, 6.8, -23] },
+    { "kind": "line", "from": [-10, 6.6, 0], "to": [-4, 6.6, 0] },
+    { "kind": "bench", "pos": [-15.5, 0, -12.6], "len": 2.4, "rot": 90 },
+    { "kind": "bench", "pos": [7.5, 0, -29.2], "len": 2.4 },
+    { "kind": "safelight", "pos": [-17.95, 4.5, -14], "rot": 90 },
+    { "kind": "safelight", "pos": [-17.95, 4.5, 6], "rot": 90 },
+    { "kind": "sign", "pos": [-3.7, 2.1, -24.78], "team": 0 }
+  ]
+}

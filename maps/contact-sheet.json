@@ -1,0 +1,69 @@
+{
+  "id": "contact-sheet",
+  "name": "Contact Sheet",
+  "blurb": "A small print room. Three plates, and a red emulsion ring around the middle one with nothing underneath it.",
+  "sizes": [1, 2],
+  "score": 240,
+  "room": { "x0": -13, "x1": 13, "z0": -21, "z1": 21, "h": 7, "floor": false },
+  "killY": -8,
+  "blocks": [
+    { "min": [-13, -0.5, -21], "max": [13, 0, -5], "mat": "floor" },
+    { "min": [5, -0.5, -5], "max": [13, 0, 5], "mat": "floor" },
+    { "min": [-2.5, -0.5, -2.5], "max": [2.5, 0, 2.5], "mat": "floor", "mid": true },
+    { "min": [-0.75, -0.5, -5], "max": [0.75, 0, -2.5], "mat": "floor" },
+    { "min": [2.5, -0.5, -0.75], "max": [5, 0, 0.75], "mat": "floor" },
+    { "min": [-5, -0.3, -5], "max": [-0.75, 0, -2.5], "mat": "emulsion" },
+    { "min": [0.75, -0.3, -5], "max": [5, 0, -2.5], "mat": "emulsion" },
+    { "min": [2.5, -0.3, -2.5], "max": [5, 0, -0.75], "mat": "emulsion" },
+    { "min": [2.5, -0.3, 0.75], "max": [5, 0, 2.5], "mat": "emulsion" },
+
+    { "min": [-13, 0, -16.2], "max": [-8.5, 3, -15.8], "mat": "wall" },
+    { "min": [-6, 0, -16.2], "max": [-1.4, 3, -15.8], "mat": "wall" },
+    { "min": [1.4, 0, -16.2], "max": [6, 3, -15.8], "mat": "wall" },
+    { "min": [8.5, 0, -16.2], "max": [13, 3, -15.8], "mat": "wall" },
+
+    { "min": [8, 0, -13], "max": [10, 1, -11], "mat": "ledge" },
+    { "min": [8, 1, -13], "max": [10, 2.3, -12.94], "mat": "glass" },
+    { "min": [8, 1, -11.06], "max": [10, 2.3, -11], "mat": "glass" },
+    { "min": [8, 1, -12.94], "max": [8.06, 2.3, -11.06], "mat": "glass" },
+    { "min": [9.94, 1, -12.94], "max": [10, 2.3, -11.06], "mat": "glass" },
+
+    { "min": [3, 0, -11], "max": [5, 1.2, -9.6], "mat": "ledge", "cast": true },
+    { "min": [-7.5, 0, -9.3], "max": [-4.5, 2.6, -9], "mat": "emulsion" },
+    { "min": [9.5, 0, -2.5], "max": [10.1, 2.2, 1], "mat": "wall", "cast": true }
+  ],
+  "plates": [
+    { "pos": [0, 0, 0], "size": [3, 3], "need": 5, "max": 11, "mid": true },
+    { "pos": [-8, 0, -5], "size": [3, 3], "need": 2.5, "max": 7 }
+  ],
+  "props": [
+    { "type": "crate", "pos": [-4, 0, -13], "size": [1.2, 1.2, 1.2] },
+    { "type": "crate", "pos": [5.5, 0, -7], "size": [1, 1, 1], "rot": 20 },
+    { "type": "steel", "pos": [-10.5, 0, -9], "size": [1.2, 1.2, 1.2] },
+    { "type": "plank", "pos": [1.5, 0, -13.5], "size": [3, 0.2, 0.6], "rot": 90 },
+    { "type": "steel", "pos": [8.6, 1, -12.3], "size": [0.35, 0.35, 0.35] },
+    { "type": "crate", "pos": [9.4, 1, -11.7], "size": [0.3, 0.3, 0.3], "rot": 15 },
+    { "type": "crate", "pos": [11, 0, -3], "size": [0.8, 0.8, 0.8] }
+  ],
+  "spawns": [
+    { "pos": [0, 0, -19], "yaw": 180 },
+    { "pos": [-7.25, 0, -19], "yaw": 180 },
+    { "pos": [7.25, 0, -19], "yaw": 180 },
+    { "pos": [-3.5, 0, -20], "yaw": 180 },
+    { "pos": [3.5, 0, -20], "yaw": 180 }
+  ],
+  "lights": [
+    { "pos": [0, 7, 0], "panel": true, "w": 2, "d": 2, "intensity": 1.1, "mid": true },
+    { "pos": [-7, 7, -10], "panel": true, "w": 2, "d": 1 },
+    { "pos": [7, 7, -10], "panel": true, "w": 2, "d": 1 },
+    { "pos": [0, 7, -18.5], "panel": true, "w": 3, "d": 1, "intensity": 0.7 },
+    { "pos": [9, 2.8, -12], "intensity": 0.5, "dist": 5, "color": "#ffe2bc" }
+  ],
+  "decor": [
+    { "kind": "line", "from": [-12.5, 5, -13.5], "to": [12.5, 5, -13.5] },
+    { "kind": "line", "from": [-12.5, 5.2, -7], "to": [-5.5, 5.2, -7] },
+    { "kind": "bench", "pos": [10.5, 0, -20.2], "len": 2.4 },
+    { "kind": "safelight", "pos": [-12.95, 3.4, -9], "rot": 90 },
+    { "kind": "sign", "pos": [-3.7, 2.1, -15.78], "team": 0 }
+  ]
+}

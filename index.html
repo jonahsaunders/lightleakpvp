@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Lightleak PvP: a team camera fight. Photograph things, develop them somewhere else at the size they looked, and use that to hold the plates and knock out the other team.">
+<title>Lightleak PvP</title>
+<link rel="icon" href="desktop/icon.png">
+<style>
+  :root {
+    color-scheme: dark;
+    --ink: #120f0d; --ink-2: #1d1916; --line: #3a322c;
+    --paper: #efe6d2; --dim: #a39a8a; --safe: #d8452f; --safe-2: #f06a4f;
+    --ok: #8fc27a; --bad: #e0574a;
+    --red: #e8553b; --blue: #4aa8d8;
+    --ui: system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--ink); color: var(--paper); font: 500 15px/1.4 var(--ui); overflow: hidden; user-select: none; }
+  #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  kbd { font: 700 11px var(--mono); background: var(--paper); color: var(--ink); border-radius: 3px; padding: 1px 5px; }
+  button, input, select { font: inherit; color: inherit; }
+
+  #vignette { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 50%, transparent 55%, #0a0605aa 100%); }
+  #grain { position: fixed; inset: -50%; pointer-events: none; opacity: .06; mix-blend-mode: overlay; animation: grain 0.5s steps(4) infinite; }
+  @keyframes grain { 0% { transform: translate(0, 0); } 25% { transform: translate(-3%, 2%); } 50% { transform: translate(2%, -3%); } 75% { transform: translate(-2%, -1%); } }
+
+  /* ---------- HUD ---------- */
+  #hud { position: fixed; inset: 0; pointer-events: none; }
+  #crosshair { position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%; background: var(--paper); box-shadow: 0 0 0 1px #0008; }
+  #prompt { position: absolute; left: 50%; top: calc(50% + 22px); transform: translateX(-50%); font: 600 13px var(--mono); white-space: nowrap; text-shadow: 0 1px 2px #000; text-align: center; }
+  #prompt .bad { color: var(--bad); } #prompt .ok { color: var(--ok); }
+  #prompt .sub { font-size: 11px; color: #efe6d2cc; margin-top: 2px; }
+  #prompt .snap { color: #0b0807; background: var(--ok); padding: 0 5px; border-radius: 2px; }
+
+  #scorebar { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); display: flex; gap: 10px; align-items: stretch; }
+  #scorebar .side { min-width: 104px; padding: 4px 12px 6px; background: #0b0807b8; border-radius: 3px; text-align: center; border-top: 3px solid; }
+  #scorebar .side.red { border-color: var(--red); } #scorebar .side.blue { border-color: var(--blue); }
+  #scorebar .side.you { box-shadow: 0 0 0 1px #efe6d255; }
+  #scorebar .n { font: 700 10px var(--mono); letter-spacing: .2em; color: var(--dim); }
+  #scorebar .s { font: 800 26px/1.05 var(--ui); }
+  #scorebar .pips { display: flex; gap: 4px; justify-content: center; margin-top: 3px; }
+  #scorebar .pips i { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--dim); }
+  #scorebar .red .pips i.on { background: var(--red); border-color: var(--red); } #scorebar .blue .pips i.on { background: var(--blue); border-color: var(--blue); }
+  #scorebar .mid { text-align: center; padding: 2px 6px; }
+  #scorebar .clock { font: 800 22px var(--mono); text-shadow: 0 1px 3px #000; }
+  #scorebar .goal { font: 700 10px var(--mono); letter-spacing: .16em; color: var(--dim); text-shadow: 0 1px 2px #000; }
+  #scorebar .chips { display: flex; gap: 4px; justify-content: center; margin-top: 4px; }
+  #scorebar .chip { width: 20px; height: 20px; display: grid; place-items: center; font: 800 12px var(--mono); background: #0b0807cc; border: 1px solid var(--line); border-radius: 3px; }
+  #feed { position: absolute; right: 16px; top: 14px; text-align: right; font: 600 13px var(--ui); line-height: 1.9; text-shadow: 0 1px 2px #000; }
+  #feed div { background: #0b0807a0; padding: 0 8px; border-radius: 3px; margin-bottom: 3px; display: inline-block; clear: both; float: right; }
+  #feed .how { color: var(--paper); margin: 0 4px; }
+  #netinfo { position: absolute; left: 16px; top: 12px; font: 600 11px var(--mono); color: var(--dim); text-shadow: 0 1px 2px #000; line-height: 1.6; }
+  #netinfo b { color: var(--paper); font-size: 13px; }
+
+  #keys { position: absolute; right: 20px; bottom: 18px; text-align: right; color: var(--dim); font-size: 12px; line-height: 1.9; text-shadow: 0 1px 2px #000; }
+
+  #vf { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: 72vh; width: 96vh; max-width: 96vw; }
+  #vf::before { content: ""; position: absolute; inset: -100vmax; border: 100vmax solid #0008; }
+  #vf .c { position: absolute; width: 28px; height: 28px; border: 2px solid var(--paper); }
+  #vf .c.tl { left: 0; top: 0; border-right: 0; border-bottom: 0; } #vf .c.tr { right: 0; top: 0; border-left: 0; border-bottom: 0; }
+  #vf .c.bl { left: 0; bottom: 0; border-right: 0; border-top: 0; } #vf .c.br { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+  #vf .rec { position: absolute; left: 14px; top: 12px; font: 700 12px var(--mono); color: var(--safe-2); }
+  #vf .rec::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--safe); margin-right: 6px; }
+  #vf .size { position: absolute; right: 14px; top: 12px; font: 700 12px var(--mono); color: var(--paper); text-shadow: 0 1px 2px #000; }
+  #vf .read { position: absolute; left: 14px; bottom: 12px; right: 14px; font: 600 12px var(--mono); display: flex; justify-content: space-between; text-shadow: 0 1px 2px #000; }
+  /* the focus box: a flash reaches whoever you hold inside it until it locks */
+  #vf .focus { position: absolute; left: 50%; top: 50%; width: 22vh; height: 22vh; transform: translate(-50%, -50%); border: 1px solid #efe6d266; border-radius: 50%; }
+  #vf.locked .focus, #vf.locked #vf-frame { border-color: var(--ok); }
+  #vf-frame { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border: 1px dashed #efe6d2cc; }
+  #vf.negative { backdrop-filter: invert(1) hue-rotate(180deg) contrast(1.1); }
+  #vf.negative .c { border-color: var(--safe-2); }
+  #vf.negative .read span, #vf.negative .size, #vf.negative .rec { background: #120f0dcc; padding: 2px 6px; border-radius: 2px; }
+  .negstrip { position: absolute; left: 0; right: 0; height: 16px; background:
+      radial-gradient(ellipse 5px 4px at 50% 50%, #120f0d 88%, transparent 100%) 0 0 / 22px 16px repeat-x,
+      linear-gradient(#b8612b, #9c4f22); opacity: 0; transition: opacity .25s; box-shadow: 0 0 12px #0008; }
+  .negstrip.top { top: 0; } .negstrip.bottom { bottom: 0; }
+  #hud.negative .negstrip { opacity: .85; }
+  #hud.negative #crosshair { background: transparent; box-shadow: 0 0 0 2px #d98a4f; width: 8px; height: 8px; margin: -4px 0 0 -4px; }
+  #negflash { position: absolute; inset: 0; backdrop-filter: invert(1); opacity: 0; }
+  #negflash.go { animation: negflash .4s ease-out; }
+  @keyframes negflash { from { opacity: 1; } to { opacity: 0; } }
+
+  #lockring { position: absolute; transform: translate(-50%, -50%); border: 2px solid var(--paper); border-radius: 50%; transition: width .08s, height .08s; box-shadow: 0 0 0 1px #0008, inset 0 0 0 1px #0008; }
+  #lockring.locked { border-color: var(--bad); border-width: 3px; }
+  #lock-name { position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%); margin-bottom: 6px; font: 700 12px var(--mono); white-space: nowrap; text-shadow: 0 1px 2px #000; }
+  #lockring.locked #lock-name { color: var(--bad); }
+
+  #watch { position: absolute; inset: 0; }
+  #watch::before { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 120px 20px #e0574a55; animation: watch 1s ease-in-out infinite; }
+  #watch.locked::before { box-shadow: inset 0 0 140px 40px #e0574a99; animation-duration: .35s; }
+  @keyframes watch { 50% { opacity: .45; } }
+  #watch .label { position: absolute; left: 50%; top: 26%; transform: translateX(-50%); font: 800 13px var(--mono); letter-spacing: .3em; color: #fff; background: #e0574acc; padding: 3px 10px; border-radius: 2px; }
+  #watch .arrow, #hurt { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+  #watch .arrow i { position: absolute; left: -10px; top: -150px; border: 10px solid transparent; border-bottom: 18px solid var(--bad); }
+  #watch .arrow.locked i { border-bottom-color: #fff; filter: drop-shadow(0 0 6px var(--bad)); }
+  #hurt { opacity: 0; }
+  #hurt::before { content: ""; position: absolute; left: -60px; top: -175px; width: 120px; height: 40px; border-radius: 50% 50% 0 0; border-top: 6px solid #fff6e8; filter: drop-shadow(0 0 8px #fff6e8); }
+
+  #film { position: absolute; left: 20px; bottom: 18px; display: grid; gap: 8px; }
+  .filmrow { font: 700 11px var(--mono); letter-spacing: .14em; color: var(--dim); opacity: .55; text-shadow: 0 1px 2px #000; }
+  .filmrow.active { opacity: 1; color: var(--paper); }
+  .filmrow .cells { display: flex; gap: 4px; margin-top: 5px; }
+  .cell { width: 12px; height: 18px; border: 1px solid var(--dim); border-radius: 2px; }
+  .cell.pos.full { background: var(--safe); border-color: var(--safe); }
+  .cell.neg.full { background: var(--paper); border-color: var(--paper); }
+  .cell.bulb { width: 14px; height: 14px; border-radius: 50%; }
+  .cell.bulb.full { background: #fff4e0; border-color: #fff4e0; box-shadow: 0 0 8px #fff4e0aa; }
+
+  #exposure { position: absolute; left: 50%; bottom: 152px; transform: translateX(-50%); font: 700 11px var(--mono); letter-spacing: .2em; color: var(--dim); text-shadow: 0 1px 2px #000; display: flex; gap: 8px; align-items: center; }
+  #exposure.hot { color: var(--paper); }
+  #exposure-pips { display: inline-flex; gap: 6px; }
+  #exposure .pip { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #efe6d277; }
+  #exposure .pip.on { background: #fff4e0; border-color: #fff4e0; box-shadow: 0 0 12px #fff4e0; }
+  #overexposure { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 35%, #fff6e8 100%); opacity: 0; transition: opacity .4s; }
+
+  #roll { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; gap: 12px; }
+  .slot { width: 112px; height: 112px; background: #efe6d20d; border: 1px dashed #efe6d240; border-radius: 3px; position: relative; transition: transform .15s; }
+  .slot.photo { background: var(--paper); border: 0; box-shadow: 0 6px 18px #000a; padding: 6px 6px 0; box-sizing: border-box; }
+  .slot.photo.neg { background: #2a2320; }
+  .slot.photo img { width: 100px; height: 75px; display: block; background: #b9ad96; }
+  .slot.photo.neg img { background: #3b312c; }
+  .slot img.fresh { animation: develop 2.2s ease-out both; }
+  @keyframes develop { from { filter: brightness(2.6) contrast(.2) sepia(.6); opacity: .35; } to { filter: none; opacity: 1; } }
+  .slot .cap { font: 600 9px var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #3b332b; text-align: center; margin-top: 5px; }
+  .slot.neg .cap { color: var(--paper); }
+  .slot .k { position: absolute; top: -9px; left: -9px; }
+  .slot .turn { position: absolute; top: 8px; right: 8px; font: 700 11px var(--mono); background: var(--safe); color: var(--ink); padding: 0 4px; border-radius: 2px; }
+  .slot.sel { transform: translateY(-14px) rotate(-2deg); box-shadow: 0 0 0 2px var(--safe), 0 10px 24px #000c; }
+
+  #toast { position: absolute; left: 50%; top: 23%; transform: translateX(-50%); font: 600 15px var(--ui); background: #120f0dcc; padding: 6px 14px; border-radius: 4px; opacity: 0; transition: opacity .25s; white-space: nowrap; }
+  #toast.on { opacity: 1; }
+  #banner { position: absolute; left: 50%; top: 34%; transform: translate(-50%, -50%); font: 900 54px var(--ui); letter-spacing: -.01em; text-shadow: 0 3px 18px #000; opacity: 0; white-space: nowrap; }
+  #banner.on { animation: banner 2.2s ease-out both; }
+  @keyframes banner { 0% { opacity: 0; transform: translate(-50%, -40%); } 15% { opacity: 1; transform: translate(-50%, -50%); } 80% { opacity: 1; } 100% { opacity: 0; } }
+  #countdown { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); font: 900 96px var(--mono); text-shadow: 0 4px 24px #000; }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; }
+  #flash.go { animation: flash .3s ease-out; }
+  @keyframes flash { from { opacity: .55; } to { opacity: 0; } }
+  #whiteout { position: absolute; inset: 0; background: radial-gradient(ellipse at center, #fff8ee88 0%, #fff8eedd 55%, #fff8ee 100%); opacity: 0; }
+  #whiteout.go { animation: whiteout .6s ease-out; }
+  @keyframes whiteout { from { opacity: .8; } to { opacity: 0; } }
+  body.calm-flash #flash.go, body.calm-flash #negflash.go { animation: none; }
+  body.calm-flash #whiteout { background: #5a1208; }
+  body.calm-flash #whiteout.go { animation: calmflash .6s ease-out; }
+  @keyframes calmflash { from { opacity: .45; } to { opacity: 0; } }
+
+  #dead { position: absolute; left: 50%; top: 58%; transform: translate(-50%, -50%) rotate(-1.5deg); width: min(360px, calc(100vw - 48px)); background: var(--paper); color: #2a2320; padding: 14px 16px; box-shadow: 0 14px 40px #000c; text-align: center; border-top: 4px solid #fff; }
+  #dead .t1 { font: 800 12px var(--mono); letter-spacing: .3em; color: #8a7e70; }
+  #dead .t2 { font: 800 30px var(--ui); margin: 4px 0; }
+  #dead #dead-by { font-size: 15px; } #dead #dead-t { font: 600 13px var(--mono); color: #6b5f52; margin-top: 8px; }
+
+  #scores { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(720px, calc(100vw - 32px)); background: #120f0df0; border: 1px solid var(--line); padding: 16px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  #scores h3 { margin: 0 0 8px; font: 800 15px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+  #scores table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  #scores td { padding: 5px 4px; border-bottom: 1px solid #2a2320; }
+  #scores td:last-child { text-align: right; color: #fff4e0; letter-spacing: 2px; }
+  #scores tr.me td { color: var(--paper); font-weight: 800; }
+  #scores tr.out td:first-child { opacity: .45; text-decoration: line-through; }
+  #scores .foot { grid-column: 1 / -1; color: var(--dim); font: 12px var(--mono); }
+  .bot { font: 700 9px var(--mono); color: var(--dim); border: 1px solid var(--line); padding: 0 3px; border-radius: 2px; vertical-align: middle; }
+
+  /* ---------- menus ---------- */
+  .screen { position: fixed; inset: 0; display: grid; place-items: center; overflow: auto; }
+  #menu { background: radial-gradient(ellipse at 30% 30%, #3a130dcc, #120f0de6 70%); }
+  .box { width: min(760px, calc(100vw - 32px)); padding: 28px 0; }
+  h1.logo { font: 900 64px/1 var(--ui); letter-spacing: -.02em; margin: 0; }
+  h1.logo span { color: var(--safe); }
+  h1.logo em { font-style: normal; font-size: .5em; letter-spacing: .06em; vertical-align: .6em; margin-left: 10px; padding: 2px 10px; background: var(--paper); color: var(--ink); border-radius: 3px; }
+  .tag { color: var(--dim); margin: 10px 0 20px; max-width: 620px; }
+  .msg { background: #efe6d210; border-left: 3px solid var(--safe); padding: 8px 12px; margin-bottom: 16px; }
+  .btn { border: 0; background: var(--safe); color: #1a0806; font: 700 15px var(--ui); letter-spacing: .06em; text-transform: uppercase; padding: 10px 20px; border-radius: 3px; cursor: pointer; }
+  .btn:hover { background: var(--safe-2); }
+  .btn.ghost { background: var(--ink-2); color: var(--paper); border: 1px solid var(--line); }
+  .btn.ghost:hover { background: var(--line); }
+  .btn.small { font-size: 12px; padding: 6px 12px; }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .btn:focus-visible, .opt:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 18px; flex-wrap: wrap; }
+  .tabs button { background: none; border: 0; padding: 9px 14px; cursor: pointer; font: 700 13px var(--mono); letter-spacing: .14em; color: var(--dim); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tabs button.on { color: var(--paper); border-color: var(--safe); }
+  .field { margin: 0 0 14px; }
+  .field > .lbl { font: 700 11px var(--mono); letter-spacing: .16em; color: var(--dim); margin-bottom: 6px; }
+  .opts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .opt { background: var(--ink-2); border: 1px solid var(--line); border-radius: 3px; padding: 7px 12px; cursor: pointer; font-size: 14px; text-align: left; }
+  .opt.on { border-color: var(--safe); background: #3a130d; }
+  .opt small { display: block; color: var(--dim); font-size: 12px; max-width: 280px; }
+  input[type=text], select { background: var(--ink-2); border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; font-size: 14px; }
+  input[type=checkbox] { accent-color: var(--safe); }
+  .note { color: var(--dim); font-size: 13px; margin-top: 10px; line-height: 1.55; }
+  .note code { font: 12px var(--mono); color: var(--paper); background: #0b0807; padding: 1px 5px; border-radius: 2px; }
+  .rooms { display: grid; gap: 6px; margin: 10px 0; }
+  .roomrow { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; background: var(--ink-2); border: 1px solid var(--line); border-radius: 3px; padding: 8px 12px; }
+  .roomrow .meta { color: var(--dim); font: 12px var(--mono); }
+  .teams { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+  .teams .team { background: var(--ink-2); border: 1px solid var(--line); border-top: 3px solid; border-radius: 3px; padding: 10px 12px; min-height: 90px; }
+  .teams .team h4 { margin: 0 0 6px; font: 800 13px var(--mono); letter-spacing: .14em; }
+  .teams .team div { padding: 3px 0; }
+  .teams .team .empty { color: var(--dim); font-style: italic; font-size: 13px; }
+  #chatlog { height: 90px; overflow: auto; background: #0b0807; border: 1px solid var(--line); border-radius: 3px; padding: 6px 8px; font-size: 13px; margin-top: 10px; }
+  #chatlog b { color: var(--dim); }
+  #howto { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+  #howto .card { background: var(--ink-2); border: 1px solid var(--line); border-radius: 3px; padding: 12px 14px; font-size: 14px; line-height: 1.5; }
+  #howto .card h4 { margin: 0 0 6px; font: 800 12px var(--mono); letter-spacing: .14em; color: var(--safe-2); }
+  #controls { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; color: var(--dim); font-size: 14px; margin-top: 16px; }
+  #controls dt { text-align: right; } #controls dd { margin: 0; }
+  .set-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; }
+  .set-h { font: 700 11px var(--mono); letter-spacing: .16em; color: var(--dim); margin-bottom: 6px; }
+  .set-grid label { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center; margin: 5px 0; color: var(--paper); font-size: 13px; }
+  .set-grid label input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--safe); }
+  .set-grid output { font: 12px var(--mono); color: var(--dim); grid-row: 1; grid-column: 2; }
+  .set-note { font-size: 12px; color: var(--dim); margin-top: 6px; line-height: 1.5; }
+
+  #pause { background: #120f0dcc; }
+  #results { background: radial-gradient(ellipse at 50% 30%, #2a1510ee, #120f0df5 70%); }
+  #results h1 { font: 900 52px/1 var(--ui); margin: 0; }
+  #results .score { font: 800 26px var(--mono); margin: 8px 0 18px; }
+  #results .sheet { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  #results .col h3 { font: 800 13px var(--mono); letter-spacing: .16em; text-transform: uppercase; margin: 0 0 8px; }
+  #results .print { background: var(--paper); color: #2a2320; padding: 10px 12px; margin-bottom: 10px; border-left: 5px solid; box-shadow: 0 8px 22px #0009; transform: rotate(-.6deg); }
+  #results .print:nth-child(odd) { transform: rotate(.5deg); }
+  #results .print.me { outline: 2px solid var(--paper); outline-offset: 3px; }
+  #results .print .nm { font: 800 16px var(--ui); }
+  #results .print .st { font: 12px var(--mono); color: #5a4f44; margin-top: 3px; }
+  #results .print .st span { color: #2a2320; font-weight: 800; }
+  #results .mvp { font: 800 9px var(--mono); background: #2a2320; color: var(--paper); padding: 1px 5px; border-radius: 2px; letter-spacing: .1em; vertical-align: middle; }
+  #results .note { margin: 4px 0 14px; }
+  @media (max-width: 640px) { #results .sheet, .teams, #scores { grid-template-columns: 1fr; } h1.logo { font-size: 44px; } }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud" hidden>
+  <div id="scorebar"></div>
+  <div id="feed"></div>
+  <div id="netinfo"></div>
+  <div id="vf" hidden>
+    <div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
+    <div class="rec" id="vf-mode">FILM</div>
+    <div class="size" id="vf-size"></div>
+    <div class="focus"></div>
+    <div id="vf-frame" hidden></div>
+    <div class="read"><span id="vf-subject">No subject</span><span id="vf-dist"></span></div>
+  </div>
+  <div class="negstrip top"></div><div class="negstrip bottom"></div>
+  <div id="negflash"></div>
+  <div id="overexposure"></div>
+  <div id="watch" hidden><div class="label">IN FRAME</div><div id="watch-arrows"></div></div>
+  <div id="hurt"></div>
+  <div id="lockring" hidden><div id="lock-name"></div></div>
+  <div id="crosshair"></div>
+  <div id="prompt"></div>
+  <div id="exposure">EXPOSURE <span id="exposure-pips"></span></div>
+  <div id="film"></div>
+  <div id="keys"></div>
+  <div id="roll"></div>
+  <div id="toast"></div>
+  <div id="banner"></div>
+  <div id="countdown" hidden></div>
+  <div id="dead" hidden><div class="t1">OVEREXPOSED</div><div class="t2">Your print is ruined</div><div id="dead-by"></div><div id="dead-t"></div></div>
+  <div id="scores" hidden></div>
+  <div id="flash"></div>
+  <div id="whiteout"></div>
+</div>
+<div id="vignette"></div>
+<div id="grain"></div>
+
+<div id="menu" class="screen">
+  <div class="box">
+    <h1 class="logo">Light<span>leak</span><em>PvP</em></h1>
+    <div class="tag">Photograph something and develop it somewhere else, at the size it looked. Two teams, one camera each: hold the plates with your own weight, and knock the other side out of the picture.</div>
+    <div class="msg" id="menu-msg" hidden></div>
+    <div class="tabs" id="tabs">
+      <button data-tab="practice" class="on">PRACTICE</button>
+      <button data-tab="online">ONLINE</button>
+      <button data-tab="howto">HOW TO PLAY</button>
+      <button data-tab="settings">SETTINGS</button>
+    </div>
+    <div id="tab-practice"></div>
+    <div id="tab-online" hidden></div>
+    <div id="tab-howto" hidden>
+      <div id="howto">
+        <div class="card"><h4>THE CAMERA</h4>Hold <kbd>RMB</kbd> to raise it and click to take a photo. Hold up a photo (<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>) and click to develop it wherever you're looking, <b>at the size it looked in the picture</b>. Far away makes things small; close up makes them big.</div>
+        <div class="card"><h4>PLATES</h4>A plate counts only while its load is inside its range, and it belongs to the team whose <b>developed</b> weight is heaviest on it. Push theirs over the top, or dissolve their weight, and it's nobody's. Each held plate scores a point a second.</div>
+        <div class="card"><h4>PORTRAITS</h4>Hold someone in the round focus box until it locks, then click: your flash marks them. Three marks and their print is ruined. Anything solid stops a flash; glass doesn't. Marks fade if you keep out of trouble.</div>
+        <div class="card"><h4>HEAVY THINGS</h4>A photo developed against the ceiling falls. Something heavy landing on someone hurts them by how heavy and how fast. Developing a wall in front of you stops their flash.</div>
+        <div class="card"><h4>NEGATIVES</h4><kbd>T</kbd> loads negative film. A developed negative dissolves whatever it touches: crates, steel, their weight on a plate, and the red emulsion. Some floors are emulsion. There's nothing under them.</div>
+        <div class="card"><h4>FILM</h4>Film, negatives and flash bulbs come back on their own. You can carry three photos, and keep five developed things at once: developing a sixth dissolves your oldest.</div>
+      </div>
+      <dl id="controls">
+        <dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <kbd>Space</kbd></dt><dd>Move, jump</dd>
+        <dt>Hold <kbd>RMB</kbd> or <kbd>F</kbd>, click</dt><dd>Raise the camera; take a photo, or flash whoever's locked</dd>
+        <dt><kbd>Wheel</kbd> or <kbd>G</kbd> while aiming</dt><dd>Widen the frame to take in several things</dd>
+        <dt><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> / <kbd>Wheel</kbd>, click</dt><dd>Hold up a photo; develop it</dd>
+        <dt><kbd>Q</kbd><kbd>E</kbd> · <kbd>T</kbd> · <kbd>X</kbd></dt><dd>Turn the photo · switch film · throw a photo away</dd>
+        <dt><kbd>Tab</kbd> · <kbd>Esc</kbd></dt><dd>Scores · menu</dd>
+      </dl>
+    </div>
+    <div id="tab-settings" hidden>
+      <div class="set-grid" id="settings-panel"></div>
+      <div class="row" style="margin-top:14px"><label class="row" style="gap:8px">Graphics <select id="gfx"><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></label></div>
+    </div>
+  </div>
+</div>
+
+<div id="pause" class="screen" hidden>
+  <div class="box" style="max-width:520px">
+    <h1 class="logo" style="font-size:44px">Paused<em id="pause-kind">ONLINE</em></h1>
+    <div class="tag" id="pause-note">The match carries on without you while this is open.</div>
+    <div class="row">
+      <button class="btn" id="resume">Resume</button>
+      <button class="btn ghost" id="leave">Leave match</button>
+    </div>
+    <div class="set-grid" id="settings-panel-2" style="margin-top:22px"></div>
+  </div>
+</div>
+
+<div id="results" class="screen" hidden>
+  <div class="box">
+    <div id="results-body"></div>
+    <div class="row" style="margin-top:18px">
+      <button class="btn" id="res-again">Play again</button>
+      <button class="btn ghost" id="res-menu">Menu</button>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/three-post.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
